@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DGE Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Rajdhani', sans-serif; background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh; }
+        
+        .header { background: linear-gradient(135deg, #1e3a8a, #2563eb, #0ea5e9); padding: 25px 40px; color: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .logo { font-size: 28px; font-weight: 700; letter-spacing: 1px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .header-right { text-align: right; }
+        .company-name { font-size: 12px; opacity: 0.9; letter-spacing: 2px; }
+        .current-date { font-family: 'Share Tech Mono', monospace; font-size: 14px; margin-top: 5px; }
+        
+        .nav-tabs { display: flex; gap: 8px; padding: 20px 40px; background: white; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .nav-tab { padding: 12px 24px; border: none; background: #f1f5f9; cursor: pointer; border-radius: 10px; font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600; color: #64748b; transition: all 0.3s; }
+        .nav-tab:hover { background: #e2e8f0; transform: translateY(-2px); }
+        .nav-tab.active { background: linear-gradient(135deg, #2563eb, #0ea5e9); color: white; box-shadow: 0 4px 15px rgba(37,99,235,0.4); }
+        
+        .tab-content { display: none; padding: 30px 40px; }
+        .tab-content.active { display: block; }
+        
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 16px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.3s; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-value { font-family: 'Share Tech Mono', monospace; font-size: 32px; font-weight: 700; }
+        .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+        
+        .section-title { font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+        .section-title::after { content: ''; flex: 1; height: 2px; background: linear-gradient(90deg, #e2e8f0, transparent); }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+        
+        .card { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-left: 4px solid #2563eb; transition: all 0.3s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+        .card.income { border-left-color: #10b981; background: linear-gradient(135deg, #ffffff, #f0fdf4); }
+        .card.expense { border-left-color: #dc2626; background: linear-gradient(135deg, #ffffff, #fef2f2); }
+        .card.warning { border-left-color: #f59e0b; background: linear-gradient(135deg, #ffffff, #fffbeb); }
+        .card.highlight { border-left-color: #2563eb; background: linear-gradient(135deg, #dbeafe, #eff6ff); }
+        
+        .card-row { display: flex; justify-content: space-between; align-items: center; }
+        .card-label { font-weight: 600; color: #334155; font-size: 16px; }
+        .card-sublabel { font-size: 12px; color: #94a3b8; margin-top: 3px; }
+        .card-value { font-family: 'Share Tech Mono', monospace; font-size: 22px; font-weight: 700; }
+        
+        .green { color: #10b981; } .red { color: #dc2626; } .orange { color: #f59e0b; } .blue { color: #2563eb; }
+        
+        .insurance-box { margin-top: 12px; padding: 12px; border-radius: 10px; }
+        .insurance-box.sf { background: linear-gradient(135deg, rgba(227,24,55,0.1), rgba(227,24,55,0.05)); border-left: 3px solid #e31837; }
+        .insurance-box.tesla { background: linear-gradient(135deg, rgba(232,33,39,0.1), rgba(232,33,39,0.05)); border-left: 3px solid #e82127; }
+        .insurance-box.progressive { background: linear-gradient(135deg, rgba(0,51,160,0.1), rgba(0,51,160,0.05)); border-left: 3px solid #0033a0; }
+        .insurance-carrier { font-weight: 600; font-size: 14px; }
+        .insurance-policy { font-size: 11px; color: #64748b; margin-top: 2px; }
+        .insurance-cost { font-family: 'Share Tech Mono', monospace; font-weight: 600; color: #10b981; margin-top: 5px; }
+        
+        .table-container { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 15px 20px; text-align: left; font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; }
+        tr:hover { background: #f8fafc; }
+        
+        .badge { display: inline-block; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; color: white; }
+        .badge.w2 { background: linear-gradient(135deg, #10b981, #059669); }
+        .badge.c1099 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .badge.business { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+        .badge.field { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+        .badge.ai { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .badge.other { background: linear-gradient(135deg, #64748b, #475569); }
+        
+        .footer { text-align: center; padding: 20px; color: #94a3b8; font-size: 12px; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">🏗️ DGE COMMAND CENTER</div>
+        <div class="header-right">
+            <div class="company-name">DANIEL GE CONSTRUCTION INC.</div>
+            <div class="current-date" id="currentDate"></div>
+        </div>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="showTab('budget', this)">💰 Budget</button>
+        <button class="nav-tab" onclick="showTab('payroll', this)">👷 Payroll</button>
+        <button class="nav-tab" onclick="showTab('bills', this)">📋 Equipment</button>
+        <button class="nav-tab" onclick="showTab('fleet', this)">🚗 Fleet</button>
+        <button class="nav-tab" onclick="showTab('subs', this)">📱 Subscriptions</button>
+    </nav>
+
+    <!-- BUDGET TAB -->
+    <div class="tab-content active" id="budget">
+        <div class="stats-row">
+            <div class="stat-card"><div class="stat-value green">$100,879</div><div class="stat-label">Monthly Income</div></div>
+            <div class="stat-card"><div class="stat-value red">$81,085</div><div class="stat-label">Monthly Expenses</div></div>
+            <div class="stat-card"><div class="stat-value blue">$19,794</div><div class="stat-label">Net Cash Flow</div></div>
+        </div>
+        
+        <div class="grid">
+            <div>
+                <div class="section-title">📈 Income</div>
+                <div class="card income"><div class="card-row"><div><div class="card-label">Project Revenue</div></div><div class="card-value green">$95,879</div></div></div>
+                <div class="card income" style="margin-top:15px;"><div class="card-row"><div><div class="card-label">Service Calls</div></div><div class="card-value green">$5,000</div></div></div>
+            </div>
+            <div>
+                <div class="section-title">📉 Expenses</div>
+                <div class="card expense"><div class="card-row"><div><div class="card-label">Payroll (Weekly)</div><div class="card-sublabel">Ends Wed / Pays Fri</div></div><div class="card-value red">$22,155</div></div></div>
+                <div class="card expense" style="margin-top:15px;"><div class="card-row"><div><div class="card-label">Equipment Payments</div><div class="card-sublabel">14 Active Loans</div></div><div class="card-value red">$24,519</div></div></div>
+                <div class="card expense" style="margin-top:15px;"><div class="card-row"><div><div class="card-label">Taxes</div><div class="card-sublabel">Comptroller + Sales Tax</div></div><div class="card-value red">$14,011</div></div></div>
+                <div class="card expense" style="margin-top:15px;"><div class="card-row"><div><div class="card-label">Insurance</div><div class="card-sublabel">SF + Progressive + Tesla</div></div><div class="card-value red">$7,900</div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAYROLL TAB -->
+    <div class="tab-content" id="payroll">
+        <div class="stats-row">
+            <div class="stat-card"><div class="stat-value green">$3,800</div><div class="stat-label">W-2 Employees</div></div>
+            <div class="stat-card"><div class="stat-value orange">$18,355</div><div class="stat-label">1099 Contractors</div></div>
+            <div class="stat-card"><div class="stat-value blue">$22,155</div><div class="stat-label">Total Weekly</div></div>
+        </div>
+        
+        <div class="section-title">👷 Weekly Payroll</div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Name</th><th>Type</th><th>Rate</th><th style="text-align:right">Amount</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>DANIEL ESPINOZA</strong></td><td><span class="badge w2">W-2</span></td><td>Weekly</td><td style="text-align:right" class="card-value green">$2,300</td></tr>
+                    <tr><td><strong>MAXIMINO ESPINOZA</strong></td><td><span class="badge w2">W-2</span></td><td>Weekly</td><td style="text-align:right" class="card-value green">$1,500</td></tr>
+                    <tr><td><strong>B&M STEEL (BENITO)</strong></td><td><span class="badge c1099">1099</span></td><td>$17K Flat</td><td style="text-align:right" class="card-value green">$17,000</td></tr>
+                    <tr><td><strong>HUMBERTO MARTINEZ</strong></td><td><span class="badge c1099">1099</span></td><td>$25/hr</td><td style="text-align:right;color:#94a3b8">Hourly</td></tr>
+                    <tr><td><strong>SERGIO MARTINEZ</strong></td><td><span class="badge c1099">1099</span></td><td>$15/hr</td><td style="text-align:right;color:#94a3b8">Hourly</td></tr>
+                    <tr><td><strong>FERNANDO BUSTOS</strong></td><td><span class="badge c1099">1099</span></td><td>$18.75/hr</td><td style="text-align:right;color:#94a3b8">Hourly</td></tr>
+                    <tr><td><strong>HORTENCIO PINELLA</strong></td><td><span class="badge c1099">1099</span></td><td>$33/hr</td><td style="text-align:right;color:#94a3b8">Hourly</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- EQUIPMENT TAB -->
+    <div class="tab-content" id="bills">
+        <div class="stats-row">
+            <div class="stat-card"><div class="stat-value orange">$24,519</div><div class="stat-label">Monthly Equipment</div></div>
+            <div class="stat-card"><div class="stat-value red">$14,011</div><div class="stat-label">Monthly Taxes</div></div>
+        </div>
+        
+        <div class="section-title">🚜 Equipment Payments</div>
+        <div class="grid">
+            <div class="card warning"><div class="card-row"><div><div class="card-label">2012 Freightliner</div><div class="card-sublabel">CIT • Due 12th</div></div><div class="card-value orange">$3,451</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">Hitachi Wheelloader</div><div class="card-sublabel">CIT • Due 21st</div></div><div class="card-value orange">$3,702</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">Mack Tow Truck</div><div class="card-sublabel">Mack Financial • Due 18th</div></div><div class="card-value orange">$2,666</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">TV620</div><div class="card-sublabel">CNH • Due 17th</div></div><div class="card-value orange">$2,219</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">T770</div><div class="card-sublabel">PNC • Due 18th</div></div><div class="card-value orange">$1,854</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">Spider Lift</div><div class="card-sublabel">DLL • Due 8th</div></div><div class="card-value orange">$1,465</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">E42</div><div class="card-sublabel">PNC • Due 1st</div></div><div class="card-value orange">$1,452</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">Genie Telehandler</div><div class="card-sublabel">CNH • Due 30th</div></div><div class="card-value orange">$1,230</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">2021 Promaster</div><div class="card-sublabel">Chrysler Capital • Due 27th</div></div><div class="card-value orange">$1,196</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">2023 Dodge</div><div class="card-sublabel">Bank of America • Due 3rd</div></div><div class="card-value orange">$1,108</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">2025 Promaster</div><div class="card-sublabel">Bank of America • Due 19th</div></div><div class="card-value orange">$1,098</div></div></div>
+            <div class="card warning"><div class="card-row"><div><div class="card-label">2023 Tesla</div><div class="card-sublabel">TD Finance • Due 13th</div></div><div class="card-value orange">$954</div></div></div>
+        </div>
+    </div>
+
+    <!-- FLEET TAB -->
+    <div class="tab-content" id="fleet">
+        <div class="section-title">🚗 Fleet with Insurance Coverage</div>
+        <div class="grid">
+            <div class="card"><strong>2025 RAM 3500</strong><div class="insurance-box sf"><div class="insurance-carrier" style="color:#e31837">🛡️ State Farm</div><div class="insurance-policy">Policy: 0016013-SFX-53</div><div class="insurance-cost">$694.37/mo</div></div></div>
+            <div class="card"><strong>2021 RAM 3500</strong><div class="insurance-box sf"><div class="insurance-carrier" style="color:#e31837">🛡️ State Farm</div><div class="insurance-policy">Policy: 0016228-SFX-53</div><div class="insurance-cost">$555.21/mo</div></div></div>
+            <div class="card"><strong>2019 RAM 3500</strong><div class="insurance-box sf"><div class="insurance-carrier" style="color:#e31837">🛡️ State Farm</div><div class="insurance-policy">Policy: 0008971-SFX-53</div><div class="insurance-cost">$615.19/mo</div></div></div>
+            <div class="card"><strong>2015 GMC 3500</strong><div class="insurance-box sf"><div class="insurance-carrier" style="color:#e31837">🛡️ State Farm</div><div class="insurance-policy">Policy: 0008971-SFX-53</div><div class="insurance-cost">$615.18/mo</div></div></div>
+            <div class="card"><strong>2023 RAM 3500</strong><div class="insurance-box sf"><div class="insurance-carrier" style="color:#e31837">🛡️ State Farm</div><div class="insurance-policy">Policy: 0006531-SFX-53</div><div class="insurance-cost">$759.46/mo</div></div></div>
+            <div class="card"><strong>2024 Mack MD6</strong><div class="insurance-box sf"><div class="insurance-carrier" style="color:#e31837">🛡️ State Farm</div><div class="insurance-policy">Policy: 0006531-SFX-53</div><div class="insurance-cost">$759.46/mo</div></div></div>
+            <div class="card"><strong>Tesla Model Y</strong><div class="insurance-box tesla"><div class="insurance-carrier" style="color:#e82127">🛡️ Tesla Insurance</div><div class="insurance-policy">Policy: TLA-TX-A-9999LYRV</div><div class="insurance-cost">$267.92/mo</div></div></div>
+            <div class="card"><strong>Tesla Model X</strong><div class="insurance-box tesla"><div class="insurance-carrier" style="color:#e82127">🛡️ Tesla Insurance</div><div class="insurance-policy">Policy: TLA-TX-A-9999LYRV</div><div class="insurance-cost">$267.92/mo</div></div></div>
+            <div class="card"><strong>Freightliner Semi</strong><div class="insurance-box progressive"><div class="insurance-carrier" style="color:#0033a0">🛡️ Progressive</div><div class="insurance-policy">Agent: Traci</div></div></div>
+            <div class="card"><strong>Peterbilt Semi</strong><div class="insurance-box progressive"><div class="insurance-carrier" style="color:#0033a0">🛡️ Progressive</div><div class="insurance-policy">Agent: Traci</div></div></div>
+        </div>
+    </div>
+
+    <!-- SUBSCRIPTIONS TAB -->
+    <div class="tab-content" id="subs">
+        <div class="section-title">📱 Monthly Subscriptions</div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Service</th><th>Category</th><th>Due Date</th><th style="text-align:right">Monthly</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>QuickBooks/Intuit</strong></td><td><span class="badge business">BUSINESS</span></td><td>15th</td><td style="text-align:right" class="card-value blue">$1,248</td></tr>
+                    <tr><td><strong>Alert 360</strong></td><td><span class="badge business">BUSINESS</span></td><td>12th</td><td style="text-align:right" class="card-value blue">$1,353</td></tr>
+                    <tr><td><strong>CompanyCam</strong></td><td><span class="badge field">FIELD</span></td><td>6th</td><td style="text-align:right" class="card-value blue">$194</td></tr>
+                    <tr><td><strong>Connecteam</strong></td><td><span class="badge field">FIELD</span></td><td>10th</td><td style="text-align:right" class="card-value blue">$126</td></tr>
+                    <tr><td><strong>OneStep GPS</strong></td><td><span class="badge field">FIELD</span></td><td>11th</td><td style="text-align:right" class="card-value blue">$119</td></tr>
+                    <tr><td><strong>ChatGPT Plus</strong></td><td><span class="badge ai">AI</span></td><td>13th</td><td style="text-align:right" class="card-value blue">$20</td></tr>
+                    <tr><td><strong>Microsoft 365</strong></td><td><span class="badge ai">AI</span></td><td>18th</td><td style="text-align:right" class="card-value blue">$32</td></tr>
+                    <tr><td><strong>AT&T</strong></td><td><span class="badge other">COMMS</span></td><td>15th</td><td style="text-align:right" class="card-value blue">$249</td></tr>
+                    <tr><td><strong>Starlink</strong></td><td><span class="badge other">COMMS</span></td><td>17th</td><td style="text-align:right" class="card-value blue">$65</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        DGE CONSTRUCTION INC. • CONFIDENTIAL • © 2026
+    </div>
+
+    <script>
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+        });
+
+        // Tab switching
+        function showTab(tabId, btn) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>
